@@ -7,13 +7,14 @@
 </div>
 
 <div class="overlay">
-  <canvas width="500" height="500"></canvas>
+  <canvas width="1248" height="648"></canvas>
 
   <p id="instructions" class="centered" style="font-family: arial black; font-size: 18px;" onclick="instructions()">Use W, A, S and D to move.</p>
 
 </div>
 
 <script type="text/javascript" src="Javascript/Electroshockist.js"></script>
+<script type="text/javascript" src="Characters.js"></script>
 
 <script>
   //get the canvas object and store it
@@ -24,14 +25,8 @@
   //disables antialiasing
   context.imageSmoothingEnabled = false;
 
-  //for smooth movement
-  var up, down, left, right;
-
-  //for bounds
-  var canMoveUp = true;
-  var canMoveDown = true;
-  var canMoveLeft = true;
-  var canMoveRight = true;
+  //for pausing
+  var pause =  false;
 
   //A variable to tell us which side the collision is occurring on
   var collisionSide = "";
@@ -39,71 +34,22 @@
   //scale of images
   var scale = 3;
 
-  //amount of boxes
-  var boxes = 4;
+  //set player stuffs
+  var Player = Cammy;
+  Player.X = 30;
+  Player.Y = 250;
 
-  //entity constructor
-  function Entity(X,Y,IMAGE) {
-    if (!isNaN(X)) this.X = X;
-    else this.X = 0;
+  //set enemy stuffs
+  var Enemy = Cammy;
 
-    if (!isNaN(Y)) this.Y = Y;
-    else this.Y = 0;
+  Player.drawImage = new Image();
+  Player.drawImage.src = Player.IMAGE;
 
-    this.VX = 0;
-    this.VY = 0;
 
-    this.W = 0;
-    this.H = 0;
+  var BG = new Image();
+  BG.src = "Assets/stage.png";
 
-    //Set image
-    if (IMAGE != undefined) this.IMAGE = IMAGE;
-    else this.IMAGE = "Assets/Box.png";
-
-    //Getters to define the left, right, top and bottom sides
-    this.left = function() { return this.X; };
-    this.right = function() { return (this.X + this.W*scale); };
-    this.top = function() { return this.Y; };
-    this.bottom = function() { return (this.Y + this.H*scale); };
-
-    this.midX = function() { return this.X + this.W/2; };
-    this.midY = function() { return this.Y +this.H/2; };
-  }
-
-  //initialize objects
-  var Box = new Array(boxes);
-  var BoxImage = new Array(boxes);
-
-  //player stuff
-  var Player = new Entity(300,150,"Assets/Player.png");
-
-  var PlayerImage = new Image();
-  PlayerImage.src = Player.IMAGE;
-
-  //create boxes
-  for(var i = 0; i < boxes; i++){
-    Box[i] = new Entity();
-    BoxImage[i] = new Image();
-    BoxImage[i].src = Box[i].IMAGE;
-
-    Box[i].W = BoxImage[i].width;
-    Box[i].H = BoxImage[i].height;
-  }
-
-  //set box postitions
-  Box[0].X = 30;
-  Box[0].Y = 170;
-
-  Box[1].X = 200;
-  Box[1].Y = 270;
-
-  Box[2].X = 130;
-  Box[2].Y = 20;
-
-  Box[3].X = 330;
-  Box[3].Y = 320;
-
-  BoxImage[0].addEventListener("load",update);
+  Player.drawImage.addEventListener("load",update);
 
   //keydown listener
   window.addEventListener("keydown", function (event) {
@@ -118,29 +64,28 @@
 
             //detects "w"
             case 87:
-              up = true;
+              Player.jump();
             break;
 
             //detects "a"
             case 65:
-              left = true;
+              Player.moveleft = true;
             break;
 
             //detects "s"
             case 83:
-              down = true;
             break;
 
             //detects "d"
             case 68:
-              right = true;
+              Player.moveright = true;
             break;
 
             default:
             alert("Something went wrong getting your key.")
           }
     }
-    else overlayon("That is not a valid key. Please use W, A, S or D.");
+    else console.log("Invalid key.");
   }, false);
 
   //keyup listener
@@ -149,170 +94,69 @@
 
       //detects "w"
       case 87:
-          up = false;
+          // Player.jump();
         break;
 
         //detects "a"
         case 65:
-          left = false;
+          Player.moveleft = false;
         break;
 
         //detects "s"
         case 83:
-          down = false;
         break;
 
         //detects "d"
         case 68:
-          right = false;
+          Player.moveright = false;
         break;
       }
   }, false);
 
-  function EntityCollision(){
-    for(var i = 0; i < Box.length; i++){
-      Box[i].W = BoxImage[i].width;
-      Box[i].H = BoxImage[i].height;
+  //and movement
+  function WallCollision(entity){
 
-      //Calculate the distance vector
-      var vx = (Player.X + Player.W/2*scale) - (Box[i].X + Box[i].W/2*scale);
-      var vy = (Player.Y + Player.H/2*scale) - (Box[i].Y + Box[i].H/2*scale);
-
-      //Figure out the combined half-widths and half-heights
-      var combinedHalfWidths = Player.W/2*scale + Box[i].W/2*scale;
-      var combinedHalfHeights = Player.H/2*scale + Box[i].H/2*scale;
-
-      //Check whether vx is less than the combined half-widths
-      if(Math.abs(vx) < combinedHalfWidths) {
-        //A collision might be occurring!
-        //Check whether vy is less than the combined half-heights
-        if(Math.abs(vy) < combinedHalfHeights) {
-          //A collision has occurred! This is good!
-          //Find out the size of the overlap on both the X and Y axes
-          var overlapX = combinedHalfWidths - Math.abs(vx);
-          var overlapY = combinedHalfHeights - Math.abs(vy);
-
-          //The collision has occurred on the axis with the
-          //*smallest* amount of overlap. Let's figure out which
-          //axis that is
-
-          if(overlapX >= overlapY) {
-            //The collision is happening on the X axis
-            //But on which side? vy can tell us
-            if(vy > 0) {
-              collisionSide = "top";
-
-              //Move the rectangle out of the collision
-              Player.Y = Player.Y + overlapY;
-            }
-            else {
-              collisionSide = "bottom";
-
-              //Move the rectangle out of the collision
-              Player.Y = Player.Y - overlapY;
-            }
-          }
-          else {
-            //The collision is happening on the Y axis
-            //But on which side? vx can tell us
-            if(vx > 0) {
-              collisionSide = "left";
-
-              //Move the rectangle out of the collision
-              Player.X = Player.X + overlapX;
-            }
-            else {
-              collisionSide = "right";
-
-              //Move the rectangle out of the collision
-              Player.X = Player.X - overlapX;
-            }
-          }
-        }
-        else {
-          //No collision
-          collisionSide = "none";
-        }
-      }
-      else {
-        //No collision
-        collisionSide = "none";
-      }
+    if (entity.left() <= 2) {
+      entity.canMoveLeft = false;
+      entity.moveleft = false;
+      entity.X = 2;
     }
-    console.log(collisionSide);
-  }
+    else entity.canMoveLeft = true;
 
-  function WallCollision(){
-    //boudary checkers
-    if (Player.top() <= 2) {
-       canMoveUp = false;
-       up = false;
-     }
-    else canMoveUp = true;
-
-    if (Player.left() <= 2) {
-      canMoveLeft = false;
-      left = false;
+    if(Player.right() >= canvas.width-2) {
+      entity.canMoveRight = false;
+      entity.moveright = false;
     }
-    else canMoveLeft = true;
+    else entity.canMoveRight = true;
 
-    if(Player.bottom() >= 498) {
-      canMoveDown = false;
-      down = false;
-    }
-    else canMoveDown = true;
+    //movement
+    //moveleft
+    if(entity.moveleft && entity.canMoveLeft) Player.VX = -5;
+    //moveright
+    if(entity.moveright && entity.canMoveRight) Player.VX = 5;
 
-    if(Player.right() >= 498) {
-      canMoveRight = false;
-      right = false;
-    }
-    else canMoveRight = true;
-
-    //Up
-    if(up && canMoveUp) Player.VY = -5;
-    //Left
-    if(left && canMoveLeft) Player.VX = -5;
-    //Down
-    if(down && canMoveDown)Player.VY = 5;
-    //Right
-    if(right && canMoveRight)Player.VX = 5;
-
-    //Set the player's velocity to zero if none of the keys are being pressed
-    if(!up && !down) Player.VY = 0;
-    if(!left && !right) Player.VX = 0;
+    //Set the Player's velocity to zero if none of the keys are being pressed
+    if(!entity.moveleft && !entity.moveright) Player.VX = 0;
+    interval = new Date() / 1000;
   }
 
   function render() {
-    Player.W = PlayerImage.width;
-    Player.H = PlayerImage.height;
-
-
-    context.fillRect (0, 0, 500, 500);
+    context.fillRect (0, 0, canvas.width, canvas.height);
     //Clear the previous animation frame
-    context.clearRect(1, 1, 498, 498);
-
-    //Loop through all the box sprites and use their properties to display them
-    for(var i = 0; i < Box.length; i++){
-      Box[i].W = BoxImage[i].width;
-      Box[i].H = BoxImage[i].height;
-      context.drawImage(BoxImage[i], 0, 0, Box[i].W, Box[i].H, Box[i].X, Box[i].Y, Box[i].W*scale, Box[i].H*scale);
-    }
-
-    //draws player
-    context.drawImage(PlayerImage, 0, 0, Player.W, Player.H, Player.X, Player.Y, Player.W*scale, Player.H*scale);
+    context.clearRect(1, 1, canvas.width-2, canvas.height-2);
+    //drwas background
+    context.drawImage(BG, 0, 0, 416, 216, 0, 0, 416 * scale, 216 * scale);
+    //draws Player
+    context.drawImage(Player.drawImage, 0, 0, Player.W, Player.H, Player.X, Player.Y, Player.W*scale, Player.H*scale);
   }
 
   function update(){
     requestAnimationFrame(update,canvas);
-    //console.log(Player.X + ", " + Player.Y);
-    EntityCollision();
-    WallCollision();
+    WallCollision(Player);
+    //WallCollision(Enemy);
 
-    //Move the player
+    //Move the Player
     Player.X += Player.VX;
-    Player.Y += Player.VY;
-
-    canvasPos = canvas.getBoundingClientRect();
 
     //Render the sprite object
     render();

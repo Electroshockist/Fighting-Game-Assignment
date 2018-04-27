@@ -182,7 +182,6 @@
       Enemy.facingDir = Enemy.facingLeft;
     }
     else {
-      console.log("past enemy");
       Player.facingDir = Player.facingLeft;
       Enemy.facingDir = Enemy.facingRight;
     }
@@ -200,10 +199,6 @@
       Enemy.currentAnim.updateAnimation()
       setTimeout(stopAnimatingEnemy, frametime);
     }
-
-    //displays stats
-    console.log("Current frame number: " + Enemy.currentAnim.currentFrame);
-    console.log("Animation y offset: " + Enemy.currentAnim.yOffset);
 
     //Render the sprite object
     render();

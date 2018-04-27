@@ -98,95 +98,55 @@ function Entity(IMAGE) {
 //Cammy
 function Cammy() {
   this.object = new Entity("Assets/Sprite Sheets/cammy.png");
-  this.object.facingRight.idle    = new animation(this.object, 5, 0);
-  this.object.facingRight.move    = new animation(this.object, 6, 1);
-  this.object.facingRight.jump    = new animation(this.object, 5, 2);
-  this.object.facingRight.crouch  = new animation(this.object, 1, 3);
-  this.object.facingRight.punch   = new animation(this.object, 5, 4);
-  this.object.facingRight.kick    = new animation(this.object, 5, 5);
-  this.object.facingRight.gethit  = new animation(this.object, 4, 6);
-  this.object.facingRight.die     = new animation(this.object, 5, 7);
-  this.object.facingRight.win     = new animation(this.object, 5, 8);
-
-  this.object.facingLeft.idle     = new animation(this.object, 5, 9);
-  this.object.facingLeft.move     = new animation(this.object, 6, 10);
-  this.object.facingLeft.jump     = new animation(this.object, 5, 11);
-  this.object.facingLeft.crouch   = new animation(this.object, 1, 12);
-  this.object.facingLeft.punch    = new animation(this.object, 5, 13);
-  this.object.facingLeft.kick     = new animation(this.object, 5, 14);
-  this.object.facingLeft.gethit   = new animation(this.object, 4, 15);
-  this.object.facingLeft.die      = new animation(this.object, 5, 16);
-  this.object.facingLeft.win      = new animation(this.object, 5, 17);
+  this.object.idle    = new animation(this.object, 5, 0);
+  this.object.move    = new animation(this.object, 6, 1);
+  this.object.jump    = new animation(this.object, 5, 2);
+  this.object.crouch  = new animation(this.object, 1, 3);
+  this.object.punch   = new animation(this.object, 5, 4);
+  this.object.kick    = new animation(this.object, 5, 5);
+  this.object.gethit  = new animation(this.object, 4, 6);
+  this.object.die     = new animation(this.object, 5, 7);
+  this.object.win     = new animation(this.object, 5, 8);
 }
 
 //Chun Li
 function ChunLi(){
    this.object = new Entity("Assets/Sprite Sheets/chunli.png");
-   this.object.facingRight.idle   = new animation(this.object, 4, 0);
-   this.object.facingRight.move   = new animation(this.object, 8, 1);
-   this.object.facingRight.jump   = new animation(this.object, 4, 2);
-   this.object.facingRight.crouch = new animation(this.object, 1, 3);
-   this.object.facingRight.punch  = new animation(this.object, 3, 4);
-   this.object.facingRight.kick   = new animation(this.object, 7, 5);
-   this.object.facingRight.gethit = new animation(this.object, 2, 6);
-   this.object.facingRight.die    = new animation(this.object, 4, 7);
-   this.object.facingRight.win    = new animation(this.object, 3, 8);
-
-   this.object.facingLeft.idle    = new animation(this.object, 4, 9);
-   this.object.facingLeft.move    = new animation(this.object, 8, 10);
-   this.object.facingLeft.jump    = new animation(this.object, 4, 11);
-   this.object.facingLeft.crouch  = new animation(this.object, 1, 12);
-   this.object.facingLeft.punch   = new animation(this.object, 3, 13);
-   this.object.facingLeft.kick    = new animation(this.object, 7, 14);
-   this.object.facingLeft.gethit  = new animation(this.object, 2, 15);
-   this.object.facingLeft.die     = new animation(this.object, 4, 16);
-   this.object.facingLeft.win     = new animation(this.object, 3, 17);
+   this.object.idle   = new animation(this.object, 4, 0);
+   this.object.move   = new animation(this.object, 8, 1);
+   this.object.jump   = new animation(this.object, 4, 2);
+   this.object.crouch = new animation(this.object, 1, 3);
+   this.object.punch  = new animation(this.object, 3, 4);
+   this.object.kick   = new animation(this.object, 7, 5);
+   this.object.gethit = new animation(this.object, 2, 6);
+   this.object.die    = new animation(this.object, 4, 7);
+   this.object.win    = new animation(this.object, 3, 8);
 }
 
 //Ken
 function Ken(){
   this.object = new Entity("Assets/Sprite Sheets/ken.png");
-  this.object.facingRight.idle    = new animation(this.object, 4, 0);
-  this.object.facingRight.move    = new animation(this.object, 5, 1);
-  this.object.facingRight.jump    = new animation(this.object, 5, 2);
-  this.object.facingRight.crouch  = new animation(this.object, 1, 3);
-  this.object.facingRight.punch   = new animation(this.object, 5, 4);
-  this.object.facingRight.kick    = new animation(this.object, 5, 5);
-  this.object.facingRight.gethit  = new animation(this.object, 4, 6);
-  this.object.facingRight.die     = new animation(this.object, 5, 7);
-  this.object.facingRight.win     = new animation(this.object, 3, 8);
-
-  this.object.facingLeft.idle     = new animation(this.object, 4, 0);
-  this.object.facingLeft.move     = new animation(this.object, 5, 1);
-  this.object.facingLeft.jump     = new animation(this.object, 5, 2);
-  this.object.facingLeft.crouch   = new animation(this.object, 1, 3);
-  this.object.facingLeft.punch    = new animation(this.object, 5, 4);
-  this.object.facingLeft.kick     = new animation(this.object, 5, 5);
-  this.object.facingLeft.gethit   = new animation(this.object, 4, 6);
-  this.object.facingLeft.die      = new animation(this.object, 5, 7);
-  this.object.facingLeft.win      = new animation(this.object, 3, 8);
+  this.object.idle    = new animation(this.object, 4, 0);
+  this.object.move    = new animation(this.object, 5, 1);
+  this.object.jump    = new animation(this.object, 5, 2);
+  this.object.crouch  = new animation(this.object, 1, 3);
+  this.object.punch   = new animation(this.object, 5, 4);
+  this.object.kick    = new animation(this.object, 5, 5);
+  this.object.gethit  = new animation(this.object, 4, 6);
+  this.object.die     = new animation(this.object, 5, 7);
+  this.object.win     = new animation(this.object, 3, 8);
 }
 
 //Ryu
 function Ryu() {
   this.object = new Entity("Assets/Sprite Sheets/ryu.png");
-  this.object.facingRight.idle    = new animation(this.object, 4, 0);
-  this.object.facingRight.move    = new animation(this.object, 5, 1);
-  this.object.facingRight.jump    = new animation(this.object, 5, 2);
-  this.object.facingRight.crouch  = new animation(this.object, 1, 3);
-  this.object.facingRight.punch   = new animation(this.object, 5, 4);
-  this.object.facingRight.kick    = new animation(this.object, 5, 5);
-  this.object.facingRight.gethit  = new animation(this.object, 4, 6);
-  this.object.facingRight.die     = new animation(this.object, 5, 7);
-  this.object.facingRight.win     = new animation(this.object, 3, 8);
-
-  this.object.facingLeft.idle     = new animation(this.object, 4, 9);
-  this.object.facingLeft.move     = new animation(this.object, 5, 10);
-  this.object.facingLeft.jump     = new animation(this.object, 5, 11);
-  this.object.facingLeft.crouch   = new animation(this.object, 1, 12);
-  this.object.facingLeft.punch    = new animation(this.object, 5, 13);
-  this.object.facingLeft.kick     = new animation(this.object, 5, 14);
-  this.object.facingLeft.gethit   = new animation(this.object, 4, 15);
-  this.object.facingLeft.die      = new animation(this.object, 5, 16);
-  this.object.facingLeft.win      = new animation(this.object, 3, 17);
+  this.object.idle    = new animation(this.object, 4, 0);
+  this.object.move    = new animation(this.object, 5, 1);
+  this.object.jump    = new animation(this.object, 5, 2);
+  this.object.crouch  = new animation(this.object, 1, 3);
+  this.object.punch   = new animation(this.object, 5, 4);
+  this.object.kick    = new animation(this.object, 5, 5);
+  this.object.gethit  = new animation(this.object, 4, 6);
+  this.object.die     = new animation(this.object, 5, 7);
+  this.object.win     = new animation(this.object, 3, 8);
 }

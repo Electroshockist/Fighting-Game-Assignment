@@ -40,9 +40,11 @@
 
   //set player stuffs
   var Player;
+  var PlayerFlip;
 
   //set enemy stuffs
   var Enemy = new Ryu().object;
+  var EnemyFlip;
 
   //keydown listener
   window.addEventListener("keydown", function (event) {
@@ -83,11 +85,12 @@
             Player.drawImage = new Image();
             Player.drawImage.src = Player.IMAGE;
 
+            Player.currentAnim = Player.idle;
+
             Enemy.drawImage = new Image();
             Enemy.drawImage.src = Enemy.IMAGE;
 
-            console.log(choice);
-
+            Enemy.currentAnim = Enemy.idle;
           break;
 
           default:
@@ -99,24 +102,36 @@
         switch (event.keyCode) {
           //detects "w"
           case 87:
-          Player.jump();
-          break;
+            break;
 
           //detects "a"
           case 65:
-          Player.moveleft = true;
-          Player.moveright = false;
-          break;
+            Player.moveleft = true;
+            Player.moveright = false;
+            break;
 
           //detects "s"
           case 83:
-          break;
+            Player.crouch.value = true;
+            break;
 
           //detects "d"
           case 68:
-          Player.moveright = true;
-          Player.moveleft = false;
-          break;
+            Player.moveright = true;
+            Player.moveleft = false;
+            break;
+
+          case  32:
+            Player.jump.value = true;
+            break;
+
+          case  16:
+            Player.kick.value = true;
+            break;
+
+          case  17:
+            Player.punch.value = true;
+            break;
 
           default:
           console.log("Invalid key.");
@@ -131,22 +146,34 @@
 
           //detects "w"
           case 87:
-              // Player.jump();
             break;
 
             //detects "a"
             case 65:
               Player.moveleft = false;
-            break;
+              break;
 
             //detects "s"
             case 83:
-            break;
+              Player.crouch.value = false;
+              break;
 
             //detects "d"
             case 68:
               Player.moveright = false;
-            break;
+              break;
+
+            case  32:
+              Player.jump.value = false;
+              break;
+
+            case  16:
+              Player.kick.value = false;
+              break;
+
+            case  17:
+              Player.punch.value = false;
+              break;
         }
     }
   }, false);
@@ -183,7 +210,9 @@
 
     //Set the Player's velocity to zero if none of the keys are being pressed
     if(!entity.moveleft && !entity.moveright) entity.VX = 0;
-    interval = new Date() / 1000;
+
+    if (entity.VX != 0) entity.move.value = true;
+    else entity.move.value = false;
   }
 
   var BG = new Image();
@@ -199,12 +228,14 @@
     //drwas background
     context.drawImage(BG, 0, 0, 416, 216, 0, 0, 416 * scale, 216 * scale);
     //draws Enemy
-    context.drawImage(Enemy.drawImage, Enemy.W * Enemy.currentAnim.currentFrame, Enemy.H * Enemy.currentAnim.yOffset, Enemy.W, Enemy.H, Enemy.X, Enemy.Y, Enemy.W*scale, Enemy.H*scale);
+    context.drawImage(Enemy.drawImage, Enemy.currentAnim.xOffset, Enemy.currentAnim.yOffset, Enemy.W, Enemy.H, Enemy.X, Enemy.Y, Enemy.W*scale, Enemy.H*scale);
     //draws Player
     context.drawImage(Player.drawImage, Player.currentAnim.xOffset, Player.currentAnim.yOffset, Player.W, Player.H, Player.X, Player.Y, Player.W*scale, Player.H*scale);
   }
 
   function update(){
+
+
     if (inMenu){
       updateMenu();
     }
@@ -219,18 +250,24 @@
 
       //determines facing direction
       if (Player.X < Enemy.X) {
+        Player.currentAnim.flip = false;
+        Enemy.currentAnim.flip = true;
       }
       else {
+        Player.currentAnim.flip = true;
+        Enemy.currentAnim.flip = false;
       }
 
-      Player.currentAnim = Player.idle;
+      Player.setAnimations();
+      Enemy.setAnimations();
+
+
       if (!Player.currentAnim.animating){
         Player.currentAnim.animating = true;
         Player.currentAnim.updateAnimation()
         setTimeout(stopAnimatingPlayer, frametime);
       }
 
-      Enemy.currentAnim = Enemy.facingDir.idle;
       if (!Enemy.currentAnim.animating){
         Enemy.currentAnim.animating = true;
         Enemy.currentAnim.updateAnimation()

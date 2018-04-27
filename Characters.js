@@ -1,33 +1,23 @@
 //animation constructor
 function animation(entity, numframes, OffsetY) {
+  this.value = false;
+
   this.currentFrame = 0;
 
   this.animating = false;
 
   this.flip = false;
-  this.flipped = false;
 
-  this.flipChar = function() {
-    this.flipped = false;
-  }
-
+  this.reverseOffsetY = OffsetY + 9;
 
   //updates animation
   this.updateAnimation = function(){
-    if (this.flip && !this.flipped && (OffsetY + 10) <= 18) {
-      OffsetY += 10;
-      this.flipped = true;
-    }
-    else if (!this.flipped && (OffsetY - 10) > 0) {
-      OffsetY -= 10;
-      this.flipped = true;
-    }
-    console.log(OffsetY);
     //offsetX = image width * current frame
     this.xOffset = entity.W * this.currentFrame;
-    //offsetY = image height * Y offset
-    this.yOffset = entity.H * OffsetY;
 
+    //offsetY = image height * Y offset
+    if(this.flip) this.yOffset = entity.H * this.reverseOffsetY;
+    else this.yOffset = entity.H * OffsetY;
 
     this.currentFrame++;
     if(this.currentFrame >= numframes){
@@ -46,9 +36,9 @@ function Entity(IMAGE) {
 
   this.W = 90;
   this.H = 120;
-  
+
   //saves current animation
-  this.currentAnim;
+  this.currentAnim = this.idle;
 
   //the hitbox size is different to the animation size
   this.borderX = 40;
@@ -80,10 +70,18 @@ function Entity(IMAGE) {
   this.drawImage;
 
   this.setAnimations = function() {
-    if (this.VX != 0) this.currentAnim = this.facingDir.move;
+    if (this.win.value) this.currentAnim = this.win;
+    else if (this.die.value) this.currentAnim = this.die;
+    else if (this.gethit.value) this.currentAnim = this.gethit;
+    else if (this.jump.value) this.currentAnim = this.jump;
+    else if (this.kick.value) this.currentAnim = this.kick;
+    else if (this.punch.value) this.currentAnim = this.punch;
+    else if (this.move.value) this.currentAnim = this.move;
+    else if (this.crouch.value) this.currentAnim = this.crouch;
+    else this.currentAnim = this.idle;
   }
 
-  this.idle;
+  this.idle = 0;
   this.move;
   this.jump;
   this.crouch;

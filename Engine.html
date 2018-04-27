@@ -15,6 +15,7 @@
 
 <script type="text/javascript" src="Javascript/Electroshockist.js"></script>
 <script type="text/javascript" src="Characters.js"></script>
+<script type="text/javascript" src="Menu.js"></script>
 
 <script>
   //get the canvas object and store it
@@ -38,44 +39,104 @@
   var scale = 3;
 
   //set player stuffs
-  var Player = new ChunLi().object;
-  Player.X = 30;
-
-  Player.drawImage = new Image();
-  Player.drawImage.src = Player.IMAGE;
+  var Player;
 
   //set enemy stuffs
-  var Enemy = new ChunLi().object;
-  Enemy.X = 500;
-
-  Enemy.drawImage = new Image();
-  Enemy.drawImage.src = Enemy.IMAGE;
-
-  var BG = new Image();
-  BG.src = "Assets/stage.png";
-
-  BG.addEventListener("load",update);
+  var Enemy = new Ryu().object;
 
   //keydown listener
   window.addEventListener("keydown", function (event) {
-    //doesn't run unless w a s or d are pressed
-    if( event.keyCode == 87 ||
-        event.keyCode == 65 ||
-        event.keyCode == 83 ||
-        event.keyCode == 68 ||
-        event.keyCode == 70 ) {
 
+      if (inMenu){
           switch (event.keyCode) {
 
-            //detects "w"
-            case 87:
-              Player.jump();
+          //detects "a"
+          case 65:
+          X-=63;
+          choice -= 1;
+          if(choice<=-1){
+            choice = 3;
+            X+=63*4;
+          }
+          break;
+
+          //detects "d"
+          case 68:
+          X+=63;
+          choice += 1;
+          if(choice>=4){
+            choice = 0;
+            X-=63*4;
+          }
+          break;
+
+          case 32:
+            inMenu = false;
+            if (choice == 0) Player = new Ryu().object;
+            if (choice == 1) Player = new Ken().object;
+            if (choice == 2) Player = new ChunLi().object;
+            if (choice == 3) Player = new Cammy().object;
+
+            Player.X = 30;
+            Enemy.X = 500;
+
+            Player.drawImage = new Image();
+            Player.drawImage.src = Player.IMAGE;
+
+            Enemy.drawImage = new Image();
+            Enemy.drawImage.src = Enemy.IMAGE;
+
+            console.log(choice);
+
+          break;
+
+          default:
+          console.log(event.keyCode + " is not valid");
+        }
+      }
+
+      else {
+        switch (event.keyCode) {
+          //detects "w"
+          case 87:
+          Player.jump();
+          break;
+
+          //detects "a"
+          case 65:
+          Player.moveleft = true;
+          Player.moveright = false;
+          break;
+
+          //detects "s"
+          case 83:
+          break;
+
+          //detects "d"
+          case 68:
+          Player.moveright = true;
+          Player.moveleft = false;
+          break;
+
+          default:
+          console.log("Invalid key.");
+        }
+      }
+  }, false);
+
+  //keyup listener
+  window.addEventListener("keyup",function(event) {
+    if(!inMenu) {
+        switch (event.keyCode) {
+
+          //detects "w"
+          case 87:
+              // Player.jump();
             break;
 
             //detects "a"
             case 65:
-              Player.moveleft = true;
-              Player.moveright = false;
+              Player.moveleft = false;
             break;
 
             //detects "s"
@@ -84,40 +145,10 @@
 
             //detects "d"
             case 68:
-              Player.moveright = true;
-              Player.moveleft = false;
+              Player.moveright = false;
             break;
-
-            default:
-            alert("Something went wrong getting your key.")
-          }
+        }
     }
-    else console.log("Invalid key.");
-  }, false);
-
-  //keyup listener
-  window.addEventListener("keyup",function(event) {
-    switch (event.keyCode) {
-
-      //detects "w"
-      case 87:
-          // Player.jump();
-        break;
-
-        //detects "a"
-        case 65:
-          Player.moveleft = false;
-        break;
-
-        //detects "s"
-        case 83:
-        break;
-
-        //detects "d"
-        case 68:
-          Player.moveright = false;
-        break;
-      }
   }, false);
 
   function stopAnimatingPlayer(){
@@ -155,7 +186,13 @@
     interval = new Date() / 1000;
   }
 
+  var BG = new Image();
+  BG.src = "Assets/stage.png";
+
+  BG.addEventListener("load",update);
+
   function render() {
+
     context.fillRect (0, 0, canvas.width, canvas.height);
     //Clear the previous animation frame
     context.clearRect(1, 1, canvas.width-2, canvas.height-2);
@@ -168,39 +205,41 @@
   }
 
   function update(){
-    requestAnimationFrame(update,canvas);
-    WallCollision(Player);
-    WallCollision(Enemy);
-
-    //Move the Player
-    Player.X += Player.VX;
-    Enemy.X += Enemy.VX;
-
-    //determines facing direction
-    if (Player.X < Enemy.X) {
-      Player.facingDir = Player.facingRight;
-      Enemy.facingDir = Enemy.facingLeft;
+    if (inMenu){
+      updateMenu();
     }
     else {
-      Player.facingDir = Player.facingLeft;
-      Enemy.facingDir = Enemy.facingRight;
-    }
+      requestAnimationFrame(update,canvas);
+      WallCollision(Player);
+      WallCollision(Enemy);
 
-    Player.currentAnim = Player.facingDir.idle;
-    if (!Player.currentAnim.animating){
-      Player.currentAnim.animating = true;
-      Player.currentAnim.updateAnimation()
-      setTimeout(stopAnimatingPlayer, frametime);
-    }
+      //Move the Player
+      Player.X += Player.VX;
+      Enemy.X += Enemy.VX;
 
-    Enemy.currentAnim = Enemy.facingDir.idle;
-    if (!Enemy.currentAnim.animating){
-      Enemy.currentAnim.animating = true;
-      Enemy.currentAnim.updateAnimation()
-      setTimeout(stopAnimatingEnemy, frametime);
-    }
+      //determines facing direction
+      if (Player.X < Enemy.X) {
+      }
+      else {
+      }
 
-    //Render the sprite object
-    render();
+      Player.currentAnim = Player.idle;
+      if (!Player.currentAnim.animating){
+        Player.currentAnim.animating = true;
+        Player.currentAnim.updateAnimation()
+        setTimeout(stopAnimatingPlayer, frametime);
+      }
+
+      Enemy.currentAnim = Enemy.facingDir.idle;
+      if (!Enemy.currentAnim.animating){
+        Enemy.currentAnim.animating = true;
+        Enemy.currentAnim.updateAnimation()
+        setTimeout(stopAnimatingEnemy, frametime);
+      }
+
+      //Render the sprite object
+      render();
+    }
   }
+
 </script>

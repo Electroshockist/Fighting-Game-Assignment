@@ -4,12 +4,30 @@ function animation(entity, numframes, OffsetY) {
 
   this.animating = false;
 
+  this.flip = false;
+  this.flipped = false;
+
+  this.flipChar = function() {
+    this.flipped = false;
+  }
+
+
   //updates animation
   this.updateAnimation = function(){
+    if (this.flip && !this.flipped && (OffsetY + 10) <= 18) {
+      OffsetY += 10;
+      this.flipped = true;
+    }
+    else if (!this.flipped && (OffsetY - 10) > 0) {
+      OffsetY -= 10;
+      this.flipped = true;
+    }
+    console.log(OffsetY);
     //offsetX = image width * current frame
     this.xOffset = entity.W * this.currentFrame;
     //offsetY = image height * Y offset
     this.yOffset = entity.H * OffsetY;
+
 
     this.currentFrame++;
     if(this.currentFrame >= numframes){
@@ -28,8 +46,7 @@ function Entity(IMAGE) {
 
   this.W = 90;
   this.H = 120;
-  //saves current facing direction
-  this.facingDir;
+  
   //saves current animation
   this.currentAnim;
 
@@ -66,32 +83,15 @@ function Entity(IMAGE) {
     if (this.VX != 0) this.currentAnim = this.facingDir.move;
   }
 
-  //animations
-  this.facingRight = {
-    name: "Right",
-    idle:0,
-    move:0,
-    jump:0,
-    crouch:0,
-    punch:0,
-    kick:0,
-    gethit:0,
-    die:0,
-    win:0
-  }
-
-  this.facingLeft = {
-    name: "Left",
-    idle:0,
-    move:0,
-    jump:0,
-    crouch:0,
-    punch:0,
-    kick:0,
-    gethit:0,
-    die:0,
-    win:0
-  }
+  this.idle;
+  this.move;
+  this.jump;
+  this.crouch;
+  this.punch;
+  this.kick;
+  this.gethit;
+  this.die;
+  this.win;
 }
 
 //character animation stuff
@@ -108,7 +108,7 @@ function Cammy() {
   this.object.facingRight.die     = new animation(this.object, 5, 7);
   this.object.facingRight.win     = new animation(this.object, 5, 8);
 
-  this.object.facingLeft.idle     = new animation(this.object, 5, 0);
+  this.object.facingLeft.idle     = new animation(this.object, 5, 9);
   this.object.facingLeft.move     = new animation(this.object, 6, 10);
   this.object.facingLeft.jump     = new animation(this.object, 5, 11);
   this.object.facingLeft.crouch   = new animation(this.object, 1, 12);

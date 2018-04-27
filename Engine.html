@@ -1,4 +1,4 @@
-<title>Collision</title>
+<title>Street Fighter 2: The new challengers</title>
 
 <link rel="stylesheet" type="text/css" href="CSS/Electroshockist.css">
 
@@ -25,6 +25,9 @@
   //disables antialiasing
   context.imageSmoothingEnabled = false;
 
+  //time between frames
+  var frametime = 150;
+
   //for pausing
   var pause =  false;
 
@@ -35,21 +38,23 @@
   var scale = 3;
 
   //set player stuffs
-  var Player = Cammy;
+  var Player = new ChunLi().object;
   Player.X = 30;
-  Player.Y = 250;
-
-  //set enemy stuffs
-  var Enemy = Cammy;
 
   Player.drawImage = new Image();
   Player.drawImage.src = Player.IMAGE;
 
+  //set enemy stuffs
+  var Enemy = new ChunLi().object;
+  Enemy.X = 500;
+
+  Enemy.drawImage = new Image();
+  Enemy.drawImage.src = Enemy.IMAGE;
 
   var BG = new Image();
   BG.src = "Assets/stage.png";
 
-  Player.drawImage.addEventListener("load",update);
+  BG.addEventListener("load",update);
 
   //keydown listener
   window.addEventListener("keydown", function (event) {
@@ -70,6 +75,7 @@
             //detects "a"
             case 65:
               Player.moveleft = true;
+              Player.moveright = false;
             break;
 
             //detects "s"
@@ -79,6 +85,7 @@
             //detects "d"
             case 68:
               Player.moveright = true;
+              Player.moveleft = false;
             break;
 
             default:
@@ -113,9 +120,17 @@
       }
   }, false);
 
+  function stopAnimatingPlayer(){
+    Player.currentAnim.animating = false;
+  }
+
+  function stopAnimatingEnemy(){
+    Enemy.currentAnim.animating = false;
+  }
+
   //and movement
   function WallCollision(entity){
-
+    //collides into left wall
     if (entity.left() <= 2) {
       entity.canMoveLeft = false;
       entity.moveleft = false;
@@ -123,7 +138,7 @@
     }
     else entity.canMoveLeft = true;
 
-    if(Player.right() >= canvas.width-2) {
+    if(entity.right() >= canvas.width-2) {
       entity.canMoveRight = false;
       entity.moveright = false;
     }
@@ -131,12 +146,12 @@
 
     //movement
     //moveleft
-    if(entity.moveleft && entity.canMoveLeft) Player.VX = -5;
+    if(entity.moveleft && entity.canMoveLeft) entity.VX = -5;
     //moveright
-    if(entity.moveright && entity.canMoveRight) Player.VX = 5;
+    if(entity.moveright && entity.canMoveRight) entity.VX = 5;
 
     //Set the Player's velocity to zero if none of the keys are being pressed
-    if(!entity.moveleft && !entity.moveright) Player.VX = 0;
+    if(!entity.moveleft && !entity.moveright) entity.VX = 0;
     interval = new Date() / 1000;
   }
 
@@ -146,17 +161,49 @@
     context.clearRect(1, 1, canvas.width-2, canvas.height-2);
     //drwas background
     context.drawImage(BG, 0, 0, 416, 216, 0, 0, 416 * scale, 216 * scale);
+    //draws Enemy
+    context.drawImage(Enemy.drawImage, Enemy.W * Enemy.currentAnim.currentFrame, Enemy.H * Enemy.currentAnim.yOffset, Enemy.W, Enemy.H, Enemy.X, Enemy.Y, Enemy.W*scale, Enemy.H*scale);
     //draws Player
-    context.drawImage(Player.drawImage, 0, 0, Player.W, Player.H, Player.X, Player.Y, Player.W*scale, Player.H*scale);
+    context.drawImage(Player.drawImage, Player.currentAnim.xOffset, Player.currentAnim.yOffset, Player.W, Player.H, Player.X, Player.Y, Player.W*scale, Player.H*scale);
   }
 
   function update(){
     requestAnimationFrame(update,canvas);
     WallCollision(Player);
-    //WallCollision(Enemy);
+    WallCollision(Enemy);
 
     //Move the Player
     Player.X += Player.VX;
+    Enemy.X += Enemy.VX;
+
+    //determines facing direction
+    if (Player.X < Enemy.X) {
+      Player.facingDir = Player.facingRight;
+      Enemy.facingDir = Enemy.facingLeft;
+    }
+    else {
+      console.log("past enemy");
+      Player.facingDir = Player.facingLeft;
+      Enemy.facingDir = Enemy.facingRight;
+    }
+
+    Player.currentAnim = Player.facingDir.idle;
+    if (!Player.currentAnim.animating){
+      Player.currentAnim.animating = true;
+      Player.currentAnim.updateAnimation()
+      setTimeout(stopAnimatingPlayer, frametime);
+    }
+
+    Enemy.currentAnim = Enemy.facingDir.idle;
+    if (!Enemy.currentAnim.animating){
+      Enemy.currentAnim.animating = true;
+      Enemy.currentAnim.updateAnimation()
+      setTimeout(stopAnimatingEnemy, frametime);
+    }
+
+    //displays stats
+    console.log("Current frame number: " + Enemy.currentAnim.currentFrame);
+    console.log("Animation y offset: " + Enemy.currentAnim.yOffset);
 
     //Render the sprite object
     render();

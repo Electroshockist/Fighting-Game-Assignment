@@ -34,7 +34,7 @@ function Entity(IMAGE) {
   this.VX = 0;
   this.VY = 0;
 
-  this.W = 90;
+  this.W = 121;
   this.H = 120;
 
   //saves current animation

@@ -24,7 +24,6 @@ function animation(name, entity, numframes, OffsetY) {
   //updates animation
   this.updateAnimation = function(){
     this.timer = new Date(Date.now());
-    console.log(this.timer - this.miliseconds);
     if(this.value && this.timer - this.miliseconds > this.frametime){
       this.miliseconds = this.timer;
       //offsetX = image width * current frame

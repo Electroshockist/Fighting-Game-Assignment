@@ -8,6 +8,8 @@ function animation(name, entity, numframes, OffsetY) {
 
   this.value = false;
 
+  this.stop = false;
+
   this.times = 0;
 
   this.numframes = numframes;
@@ -24,7 +26,7 @@ function animation(name, entity, numframes, OffsetY) {
   //updates animation
   this.updateAnimation = function(){
     this.timer = new Date(Date.now());
-    if(this.value && this.timer - this.miliseconds > this.frametime){
+    if(this.value && this.timer - this.miliseconds > this.frametime && !this.stop){
       this.miliseconds = this.timer;
       //offsetX = image width * current frame
       this.xOffset = entity.W * this.currentFrame;
@@ -85,6 +87,10 @@ function Entity(IMAGE) {
   this.drawImage;
 
   this.setAnimations = function() {
+    if (this.health <= 0) this.die.value = true;
+    if (this.die.times > 0) this.die.stop = true;
+    if (this.win.times > 0) this.win.stop = true;
+
     if (this.win.value) this.currentAnim = this.win;
     else if (this.die.value) this.currentAnim = this.die;
     else if (this.gethit.value) this.currentAnim = this.gethit;

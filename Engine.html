@@ -9,7 +9,9 @@
 <div class="overlay">
   <canvas width="1248" height="648"></canvas>
 
-  <p id="instructions" class="centered" style="font-family: arial black; font-size: 18px;" onclick="instructions()">Click to see controls.</p>
+
+  <p id="instructions" class="centered" style="font-family: arial black; font-size: 18px;" onclick="instructions()">Click to see instructions.</p>
+  <p id="controls" class="centered" style="font-family: arial black; font-size: 18px;" onclick="controls()">Click to see controls.</p>
   <p id="credits" class="centered" style="font-family: arial black; font-size: 18px;" onclick="credits()">Click to see credits.</p>
 
   <p id="colliding" class="centered" style="font-family: arial black; font-size: 18px;"></p>
@@ -27,11 +29,14 @@
 <script type="text/javascript" src="Javascript/Menu.js"></script>
 
 <script>
+  // TODO: figure out if entity.completed is necessary
+
   //get the canvas object and store it
   var canvas = document.querySelector("canvas");
   //get the 2D rendering library
   var context = canvas.getContext("2d");
 
+  //holds value wheter player and enemy are colliding
   var colliding = false;
 
   //disables antialiasing
@@ -49,8 +54,15 @@
   var Player;
 
   //set enemy stuffs
-  var Enemy = new Ryu().object;
-  var lastEnemyMoveTime = 0;
+  var Enemy = charselection(Math.floor(Math.random() * 4));
+  //time between enemy movements
+  var EnemyActTime = 350;
+  var EnemyMoveTime = 200;
+
+  //timers for enemy actions and movements
+  var actTimer = 0;
+  var moveTimer = 0;
+  var timer;
 
   //keydown listener
   window.addEventListener("keydown", function (event) {
@@ -80,10 +92,7 @@
 
         case 32:
         inMenu = false;
-        if (choice == 0) Player = new Ryu().object;
-        if (choice == 1) Player = new Ken().object;
-        if (choice == 2) Player = new ChunLi().object;
-        if (choice == 3) Player = new Cammy().object;
+        Player = charselection(choice);
 
         Player.X = 30 - Player.W;
         Enemy.X = canvas.width - Enemy.W * 2 - 30;
@@ -106,11 +115,6 @@
 
     else {
       switch (event.keyCode) {
-        //detects "w"
-        case 87:
-        Player.health--;
-        break;
-
         //detects "a"
         case 65:
         Player.moveleft = true;
@@ -131,7 +135,7 @@
         break;
 
         case  32:
-        if (!Player.jump.completed){
+        if (!Player.jump.value){
           Player.jump.value = true;
           Player.jump.completed = true;
           jumpKeyUp = false;
@@ -149,7 +153,7 @@
 
         case  38:
         if (!Player.punch.completed){
-          attack(Enemy,10);
+          attack(Enemy, 10);
           Player.punch.value = true;
           Player.punch.completed = true;
           punchKeyUp = false;
@@ -166,10 +170,6 @@
   window.addEventListener("keyup",function(event) {
     if(!inMenu) {
         switch (event.keyCode) {
-
-          //detects "w"
-          case 87:
-            break;
 
             //detects "a"
             case 65:
@@ -201,21 +201,77 @@
     }
   }, false);
 
+  function charselection(num){
+    switch (num) {
+      case 0:
+        return new Ryu().object;
+        break;
+      case 1:
+        return new Ken().object
+        break;
+      case 2:
+        return new ChunLi().object
+        break;
+      case 3:
+        return new Cammy().object
+        break;
+      default:
+      overlayon("You picked a character that doesn't exist.")
+
+    }
+  }
+
   function attack(target, damage) {
     if (colliding){
-      if (target.jump.value){
-        damage = 0;
+      if (target.jump.value) damage = 0;
+      else if(target.crouch.value && !target.punch.value && !target.kick.value && !target.move.value) damage -= 7;
+
+      if (target.health > 0) {
+        target.health -= damage;
       }
-      else if(target.crouch.value && !target.punch.value && !target.kick.value && !target.move.value){
-        damage -= 5;
-      }
-      target.health -= damage;
     }
   }
 
   function EnemyController(){
-    
+    timer = new Date(Date.now());
+    if (timer - actTimer >= EnemyActTime){
+      actTimer = timer;
+      //random numbmber to 5 with only 3 actions(2 chances for duds)
+      var rand = Math.random() * 5;
 
+      if (!Enemy.punch.completed && rand <= 1){
+        attack(Player, 10);
+        Enemy.punch.value = true;
+        Enemy.punch.completed = true;
+      }
+      else if (!Enemy.kick.completed && rand <= 2){
+        attack(Player, 15);
+        Enemy.kick.value = true;
+        Enemy.kick.completed = true;
+      }
+      else if (!Enemy.jump.completed && rand <= 3){
+        Enemy.jump.value = true;
+        Enemy.jump.completed = true;
+      }
+    }
+    //random movement
+    if (timer - moveTimer >= EnemyMoveTime){
+      moveTimer = timer;
+      var rand = Math.random() * 2.5;
+      //higher
+      if (rand <= 1) {
+        if(Enemy.moveright) Enemy.moveright = false;
+        else Enemy.moveright = true;
+      }
+      if (rand <= 2) {
+        if (Enemy.moveleft) Enemy.moveleft = false;
+        else Enemy.moveleft = true;
+      }
+      else {
+        Enemy.moveleft = false;
+        Enemy.moveright = false;
+      }
+    }
   }
 
   //and movement
@@ -253,7 +309,7 @@
     }
     else entity.canMoveRight = true;
 
-    //movement
+    //---------------movement-----------------//
     //moveleft
     if(entity.moveleft && entity.canMoveLeft) entity.VX = -5;
     //moveright
@@ -267,12 +323,8 @@
     else entity.move.value = false;
 
     //collisions
-    if(Player.right() > Enemy.left() && Player.left() < Enemy.right()){
-      colliding = true;
-    }
-    else {
-      colliding = false;
-    }
+    if(Player.right() > Enemy.left() && Player.left() < Enemy.right()) colliding = true;
+    else colliding = false;
   }
 
   var KO = new Image();
@@ -306,10 +358,10 @@
     context.drawImage(Enemy.drawImage, Enemy.currentAnim.xOffset, Enemy.currentAnim.yOffset, Enemy.W, Enemy.H, Enemy.X, Enemy.Y, Enemy.W*scale, Enemy.H*scale);
     //draws Player
     context.drawImage(Player.drawImage, Player.currentAnim.xOffset, Player.currentAnim.yOffset, Player.W, Player.H, Player.X, Player.Y, Player.W*scale, Player.H*scale);
-
+    //healthbar bg
     context.drawImage(PlayerHealthEmpty,0,0,PlayerHealthEmpty.width,PlayerHealthEmpty.height,(canvas.width / 2) - PlayerHealthEmpty.width*scale - 47, 6, PlayerHealthEmpty.width * scale, PlayerHealthEmpty.height * scale);
     context.drawImage(EnemyHealthEmpty,0,0,EnemyHealthEmpty.width,EnemyHealthEmpty.height,(canvas.width / 2) + EnemyHealthEmpty.width/scale, 6, EnemyHealthEmpty.width * scale, EnemyHealthEmpty.height * scale);
-
+    //healthbar
     context.drawImage(PlayerHealth,0,0,PlayerHealth.width,PlayerHealth.height,(canvas.width / 2) - PlayerHealth.width* scale * Player.health/100 - 47 , 0, PlayerHealth.width * scale * Player.health/100, PlayerHealth.height * scale);
     context.drawImage(EnemyHealth,0,0,EnemyHealth.width,EnemyHealth.height,(canvas.width / 2) + EnemyHealth.width/scale, 0, EnemyHealth.width * scale * Enemy.health/100, EnemyHealth.height * scale);
     //drwas KO indicator
@@ -325,44 +377,59 @@
       Player.setAnimations();
       Enemy.setAnimations();
 
-      BodyHandler(Player);
-      BodyHandler(Enemy);
-      // document.getElementById("colliding").innerHTML = "Colliding: " + colliding;
-      // document.getElementById("jump").innerHTML = "Jumping: " + Player.jump.value;
-      // document.getElementById("idle").innerHTML = "Idle: " + Player.idle.value;
-      // document.getElementById("punch").innerHTML = "Punching: " + Player.punch.value;
-      // document.getElementById("kick").innerHTML = "Kicking: " + Player.kick.value;
-      // document.getElementById("crouch").innerHTML = "Crouching: " + Player.crouch.value;
-
-      //re-enable jump, kick and punch
-      if(!Player.kick.value && kickKeyUp){
-          Player.kick.completed = false;
+      if(Enemy.die.value){
+        Player.win.value = true;
+        if (Player.win.stop){
+          reloadOnClick = true;
+          overlayon("You win!");
+        }
       }
-
-      if(!Player.punch.value && punchKeyUp){
-          Player.punch.completed = false;
-      }
-
-      if(!Player.jump.value && jumpKeyUp){
-          Player.jump.completed = false;
-      }
-
-      //Move the Player
-      Player.X += Player.VX;
-      Enemy.X += Enemy.VX;
-
-      //determines facing direction
-      if (Player.X < Enemy.X) {
-        Player.currentAnim.flip = false;
-        Enemy.currentAnim.flip = true;
+      else if (Player.die.value){
+        Enemy.win.value = true;
+        if (Enemy.win.stop){
+          reloadOnClick = true;
+          overlayon("You lose!")
+        }
       }
       else {
-        Player.currentAnim.flip = true;
-        Enemy.currentAnim.flip = false;
+
+        BodyHandler(Player);
+        BodyHandler(Enemy);
+
+        EnemyController();
+
+        //-----------------------move resetter------------------------//
+        //re-enable player jump, kick and punch
+        if(!Player.kick.value && kickKeyUp) Player.kick.completed = false;
+
+        if(!Player.punch.value && punchKeyUp) Player.punch.completed = false;
+
+        if(!Player.jump.value && jumpKeyUp) Player.jump.completed = false;
+
+        //re-enable enemy jump, kick and punch
+        if(!Enemy.kick.value) Enemy.kick.completed = false;
+
+        if(!Enemy.punch.value) Enemy.punch.completed = false;
+
+        if(!Enemy.jump.value) Enemy.jump.completed = false;
+
+
+        //Move the Player
+        Player.X += Player.VX;
+        Enemy.X += Enemy.VX;
+
+        //determines facing direction
+        if (Player.X < Enemy.X) {
+          Player.currentAnim.flip = false;
+          Enemy.currentAnim.flip = true;
+        }
+        else {
+          Player.currentAnim.flip = true;
+          Enemy.currentAnim.flip = false;
+        }
       }
 
       Player.currentAnim.updateAnimation();
-
       Enemy.currentAnim.updateAnimation();
 
       //Render the sprite object
@@ -370,12 +437,16 @@
     }
   }
 
-  function credits() {
-    overlayon("Eric Balas</br>Ethan Butler</br>Marco Colonna</br>Jory Finewax");
+  function instructions() {
+    overlayon("Punching deals 10 damage.</br>Kicking deals 15 damage.</br>Jumping at the right time makes you take no damage from enemy attacks.</br>Crouching makes you take 7 less damage.");
   }
 
-  function instructions() {
+  function controls() {
     overlayon("W and D to move.</br> S to crouch. </br> Up arrow to punch. </br> Down arrow to kick. </br> Spacebar to jump or select.");
+  }
+
+  function credits() {
+    overlayon("Eric Balas</br>Ethan Butler</br>Marco Colonna</br>Jory Finewax");
   }
 
 </script>

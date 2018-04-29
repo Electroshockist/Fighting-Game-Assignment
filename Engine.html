@@ -9,13 +9,20 @@
 <div class="overlay">
   <canvas width="1248" height="648"></canvas>
 
-  <p id="instructions" class="centered" style="font-family: arial black; font-size: 18px;" onclick="instructions()">Use W, A, S and D to move.</p>
+  <p id="instructions" class="centered" style="font-family: arial black; font-size: 18px;" onclick="instructions()">Click to see controls.</p>
+  <p id="credits" class="centered" style="font-family: arial black; font-size: 18px;" onclick="credits()">Click to see credits.</p>
+
+  <p id="idle" class="centered" style="font-family: arial black; font-size: 18px;"></p>
+  <p id="punch" class="centered" style="font-family: arial black; font-size: 18px;"></p>
+  <p id="kick" class="centered" style="font-family: arial black; font-size: 18px;"></p>
+  <p id="crouch" class="centered" style="font-family: arial black; font-size: 18px;"></p>
+  <p id="jump" class="centered" style="font-family: arial black; font-size: 18px;"></p>
 
 </div>
 
 <script type="text/javascript" src="Javascript/Electroshockist.js"></script>
-<script type="text/javascript" src="Characters.js"></script>
-<script type="text/javascript" src="Menu.js"></script>
+<script type="text/javascript" src="Javascript/Characters.js"></script>
+<script type="text/javascript" src="Javascript/Menu.js"></script>
 
 <script>
   //get the canvas object and store it
@@ -23,14 +30,10 @@
   //get the 2D rendering library
   var context = canvas.getContext("2d");
 
+  var colliding = false;
+
   //disables antialiasing
   context.imageSmoothingEnabled = false;
-
-  //time between frames
-  var frametime = 150;
-
-  //for pausing
-  var pause =  false;
 
   //A variable to tell us which side the collision is occurring on
   var collisionSide = "";
@@ -108,6 +111,7 @@
           case 65:
             Player.moveleft = true;
             Player.moveright = false;
+            Player.idle.value = false;
             break;
 
           //detects "s"
@@ -119,18 +123,28 @@
           case 68:
             Player.moveright = true;
             Player.moveleft = false;
+            Player.idle.value = false;
             break;
 
           case  32:
-            Player.jump.value = true;
+            if (!Player.jump.completed){
+              Player.jump.value = true;
+              Player.jump.completed = true;
+            }
             break;
 
-          case  16:
-            Player.kick.value = true;
+          case  40:
+            if (!Player.kick.completed){
+              Player.kick.value = true;
+              Player.kick.completed = true;
+            }
             break;
 
-          case  17:
-            Player.punch.value = true;
+          case  38:
+            if (!Player.punch.completed){
+              Player.punch.value = true;
+              Player.punch.completed = true;
+            }
             break;
 
           default:
@@ -163,16 +177,22 @@
               Player.moveright = false;
               break;
 
-            case  32:
-              Player.jump.value = false;
+            case 40:
+              if(!Player.kick.value){
+                  Player.kick.completed = false;
+                }
               break;
 
-            case  16:
-              Player.kick.value = false;
+            case 38:
+              if(!Player.punch.value){
+                  Player.punch.completed = false;
+                }
               break;
 
-            case  17:
-              Player.punch.value = false;
+            case 32:
+              if(!Player.jump.value){
+                  Player.jump.completed = false;
+                }
               break;
         }
     }
@@ -187,12 +207,29 @@
   }
 
   //and movement
-  function WallCollision(entity){
+  function BodyHandler(entity){
+    //punch, kick and jump can only play once per key down
+    if (entity.punch.times > 0){
+        entity.punch.value = false;
+        entity.punch.currentFrame = 0;
+        entity.punch.times = 0;
+    }
+    if (entity.kick.times > 0){
+        entity.kick.value = false;
+        entity.kick.currentFrame = 0;
+        entity.kick.times = 0;
+    }
+    if (entity.jump.times > 0){
+        entity.jump.value = false;
+        entity.jump.currentFrame = 0;
+        entity.jump.times = 0;
+    }
+
     //collides into left wall
-    if (entity.left() <= 2) {
+    if (entity.X <= -entity.W) {
       entity.canMoveLeft = false;
       entity.moveleft = false;
-      entity.X = 2;
+      entity.X = -entity.W;
     }
     else entity.canMoveLeft = true;
 
@@ -215,6 +252,21 @@
     else entity.move.value = false;
   }
 
+  var KO = new Image();
+  KO.src = "Assets/Health/";
+
+  var PlayerHealthFull = new Image();
+  PlayerHealthFull.src = "Assets/Health/healthbar.png";
+
+  var PlayerHealthEmpty = new Image();
+  PlayerHealthEmpty.src = "Assets/Health/healthbarempty.png";
+
+  var EnemyHealthFull = new Image();
+  EnemyHealthFull.src = "Assets/Health/healthbar.png";
+
+  var EnemyHealthEmpty = new Image();
+  EnemyHealthEmpty.src = "Assets/Health/healthbarempty.png";
+
   var BG = new Image();
   BG.src = "Assets/stage.png";
 
@@ -236,13 +288,23 @@
   function update(){
 
 
+
     if (inMenu){
       updateMenu();
     }
     else {
       requestAnimationFrame(update,canvas);
-      WallCollision(Player);
-      WallCollision(Enemy);
+
+      Player.setAnimations();
+      Enemy.setAnimations();
+
+      BodyHandler(Player);
+      BodyHandler(Enemy);
+      document.getElementById("jump").innerHTML = "Jumping: " + Player.jump.value;
+      document.getElementById("idle").innerHTML = "Idle: " + Player.idle.value;
+      document.getElementById("punch").innerHTML = "Punching: " + Player.punch.value;
+      document.getElementById("kick").innerHTML = "Kicking: " + Player.kick.value;
+      document.getElementById("crouch").innerHTML = "Crouching: " + Player.crouch.value;
 
       //Move the Player
       Player.X += Player.VX;
@@ -258,25 +320,17 @@
         Enemy.currentAnim.flip = false;
       }
 
-      Player.setAnimations();
-      Enemy.setAnimations();
-      console.log(Player.currentAnim.currentFrame);
+      Player.currentAnim.updateAnimation();
 
-      if (!Player.currentAnim.animating){
-        Player.currentAnim.animating = true;
-        Player.currentAnim.updateAnimation()
-        setTimeout(stopAnimatingPlayer, frametime);
-      }
-
-      if (!Enemy.currentAnim.animating){
-        Enemy.currentAnim.animating = true;
-        Enemy.currentAnim.updateAnimation()
-        setTimeout(stopAnimatingEnemy, frametime);
-      }
+      Enemy.currentAnim.updateAnimation();
 
       //Render the sprite object
       render();
     }
+  }
+
+  function credits() {
+    overlayon("Eric Balas</br>Ethan Butler</br>Marco Colonna</br>Jory Finewax");
   }
 
 </script>

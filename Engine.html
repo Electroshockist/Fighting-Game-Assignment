@@ -1,0 +1,452 @@
+<title>Street Fighter 2: The new challengers</title>
+
+<link rel="stylesheet" type="text/css" href="CSS/Electroshockist.css">
+
+<div id="overlay" onclick="overlayoff()" style="display: none;">
+  <div id="overlay_text" style="margin-top: 5%;"></div>
+</div>
+
+<div class="overlay">
+  <canvas width="1248" height="648"></canvas>
+
+
+  <p id="instructions" class="centered" style="font-family: arial black; font-size: 18px;" onclick="instructions()">Click to see instructions.</p>
+  <p id="controls" class="centered" style="font-family: arial black; font-size: 18px;" onclick="controls()">Click to see controls.</p>
+  <p id="credits" class="centered" style="font-family: arial black; font-size: 18px;" onclick="credits()">Click to see credits.</p>
+
+  <p id="colliding" class="centered" style="font-family: arial black; font-size: 18px;"></p>
+
+  <p id="idle" class="centered" style="font-family: arial black; font-size: 18px;"></p>
+  <p id="punch" class="centered" style="font-family: arial black; font-size: 18px;"></p>
+  <p id="kick" class="centered" style="font-family: arial black; font-size: 18px;"></p>
+  <p id="crouch" class="centered" style="font-family: arial black; font-size: 18px;"></p>
+  <p id="jump" class="centered" style="font-family: arial black; font-size: 18px;"></p>
+
+</div>
+
+<script type="text/javascript" src="Javascript/Electroshockist.js"></script>
+<script type="text/javascript" src="Javascript/Characters.js"></script>
+<script type="text/javascript" src="Javascript/Menu.js"></script>
+
+<script>
+  // TODO: figure out if entity.completed is necessary
+
+  //get the canvas object and store it
+  var canvas = document.querySelector("canvas");
+  //get the 2D rendering library
+  var context = canvas.getContext("2d");
+
+  //holds value wheter player and enemy are colliding
+  var colliding = false;
+
+  //disables antialiasing
+  context.imageSmoothingEnabled = false;
+
+  //for re-enableing stuffs
+  var jumpKeyUp = false;
+  var punchKeyUp = false;
+  var kickKeyUp = false;
+
+  //scale of images
+  var scale = 3;
+
+  //set player stuffs
+  var Player;
+
+  //set enemy stuffs
+  var Enemy = charselection(Math.floor(Math.random() * 4));
+  //time between enemy movements
+  var EnemyActTime = 350;
+  var EnemyMoveTime = 200;
+
+  //timers for enemy actions and movements
+  var actTimer = 0;
+  var moveTimer = 0;
+  var timer;
+
+  //keydown listener
+  window.addEventListener("keydown", function (event) {
+    //main menu
+    if (inMenu){
+      switch (event.keyCode) {
+
+        //detects "a"
+        case 65:
+        X-=63;
+        choice -= 1;
+        if(choice<=-1){
+          choice = 3;
+          X+=63*4;
+        }
+        break;
+
+        //detects "d"
+        case 68:
+        X+=63;
+        choice += 1;
+        if(choice>=4){
+          choice = 0;
+          X-=63*4;
+        }
+        break;
+
+        case 32:
+        inMenu = false;
+        Player = charselection(choice);
+
+        Player.X = 30 - Player.W;
+        Enemy.X = canvas.width - Enemy.W * 2 - 30;
+
+        Player.drawImage = new Image();
+        Player.drawImage.src = Player.IMAGE;
+
+        Player.currentAnim = Player.idle;
+
+        Enemy.drawImage = new Image();
+        Enemy.drawImage.src = Enemy.IMAGE;
+
+        Enemy.currentAnim = Enemy.idle;
+        break;
+
+        default:
+        console.log(event.keyCode + " is not valid");
+      }
+    }
+
+    else {
+      switch (event.keyCode) {
+        //detects "a"
+        case 65:
+        Player.moveleft = true;
+        Player.moveright = false;
+        Player.idle.value = false;
+        break;
+
+        //detects "s"
+        case 83:
+        Player.crouch.value = true;
+        break;
+
+        //detects "d"
+        case 68:
+        Player.moveright = true;
+        Player.moveleft = false;
+        Player.idle.value = false;
+        break;
+
+        case  32:
+        if (!Player.jump.value){
+          Player.jump.value = true;
+          Player.jump.completed = true;
+          jumpKeyUp = false;
+        }
+        break;
+
+        case  40:
+        if (!Player.kick.completed){
+          attack(Enemy, 15);
+          Player.kick.value = true;
+          Player.kick.completed = true;
+          kickKeyUp = false;
+        }
+        break;
+
+        case  38:
+        if (!Player.punch.completed){
+          attack(Enemy, 10);
+          Player.punch.value = true;
+          Player.punch.completed = true;
+          punchKeyUp = false;
+        }
+        break;
+
+        default:
+        console.log("Invalid key.");
+      }
+    }
+  }, false);
+
+  //keyup listener
+  window.addEventListener("keyup",function(event) {
+    if(!inMenu) {
+        switch (event.keyCode) {
+
+            //detects "a"
+            case 65:
+              Player.moveleft = false;
+              break;
+
+            //detects "s"
+            case 83:
+              Player.crouch.value = false;
+              break;
+
+            //detects "d"
+            case 68:
+              Player.moveright = false;
+              break;
+
+            case 40:
+              kickKeyUp = true;
+              break;
+
+            case 38:
+              punchKeyUp = true;
+              break;
+
+            case 32:
+              jumpKeyUp = true;
+              break;
+        }
+    }
+  }, false);
+
+  function charselection(num){
+    switch (num) {
+      case 0:
+        return new Ryu().object;
+        break;
+      case 1:
+        return new Ken().object
+        break;
+      case 2:
+        return new ChunLi().object
+        break;
+      case 3:
+        return new Cammy().object
+        break;
+      default:
+      overlayon("You picked a character that doesn't exist.")
+
+    }
+  }
+
+  function attack(target, damage) {
+    if (colliding){
+      if (target.jump.value) damage = 0;
+      else if(target.crouch.value && !target.punch.value && !target.kick.value && !target.move.value) damage -= 7;
+
+      if (target.health > 0) {
+        target.health -= damage;
+      }
+    }
+  }
+
+  function EnemyController(){
+    timer = new Date(Date.now());
+    if (timer - actTimer >= EnemyActTime){
+      actTimer = timer;
+      //random numbmber to 5 with only 3 actions(2 chances for duds)
+      var rand = Math.random() * 5;
+
+      if (!Enemy.punch.completed && rand <= 1){
+        attack(Player, 10);
+        Enemy.punch.value = true;
+        Enemy.punch.completed = true;
+      }
+      else if (!Enemy.kick.completed && rand <= 2){
+        attack(Player, 15);
+        Enemy.kick.value = true;
+        Enemy.kick.completed = true;
+      }
+      else if (!Enemy.jump.completed && rand <= 3){
+        Enemy.jump.value = true;
+        Enemy.jump.completed = true;
+      }
+    }
+    //random movement
+    if (timer - moveTimer >= EnemyMoveTime){
+      moveTimer = timer;
+      var rand = Math.random() * 2.5;
+      //higher
+      if (rand <= 1) {
+        if(Enemy.moveright) Enemy.moveright = false;
+        else Enemy.moveright = true;
+      }
+      if (rand <= 2) {
+        if (Enemy.moveleft) Enemy.moveleft = false;
+        else Enemy.moveleft = true;
+      }
+      else {
+        Enemy.moveleft = false;
+        Enemy.moveright = false;
+      }
+    }
+  }
+
+  //and movement
+  function BodyHandler(entity){
+    //punch, kick and jump can only play once per key down
+    if (entity.punch.times > 0){
+        entity.punch.value = false;
+        entity.punch.currentFrame = 0;
+        entity.punch.times = 0;
+    }
+    if (entity.kick.times > 0){
+        entity.kick.value = false;
+        entity.kick.currentFrame = 0;
+        entity.kick.times = 0;
+    }
+    if (entity.jump.times > 0){
+        entity.jump.value = false;
+        entity.jump.currentFrame = 0;
+        entity.jump.times = 0;
+    }
+
+    //collides into left wall
+    //i have no clue why this works, but for some reason it does
+    if (entity.X <= -entity.W) {
+      entity.canMoveLeft = false;
+      entity.moveleft = false;
+      entity.X = -entity.W;
+    }
+    else entity.canMoveLeft = true;
+
+    //collides into right wall
+    if(entity.right() >= canvas.width-2) {
+      entity.canMoveRight = false;
+      entity.moveright = false;
+    }
+    else entity.canMoveRight = true;
+
+    //---------------movement-----------------//
+    //moveleft
+    if(entity.moveleft && entity.canMoveLeft) entity.VX = -5;
+    //moveright
+    if(entity.moveright && entity.canMoveRight) entity.VX = 5;
+
+    //Set the Player's velocity to zero if none of the keys are being pressed
+    if(!entity.moveleft && !entity.moveright) entity.VX = 0;
+
+    //change state of move animation with X velocity
+    if (entity.VX != 0) entity.move.value = true;
+    else entity.move.value = false;
+
+    //collisions
+    if(Player.right() > Enemy.left() && Player.left() < Enemy.right()) colliding = true;
+    else colliding = false;
+  }
+
+  var KO = new Image();
+  KO.src = "Assets/Health/KO.png";
+
+  var PlayerHealth = new Image();
+  PlayerHealth.src = "Assets/Health/healthbarplayer.png";
+
+  var PlayerHealthEmpty = new Image();
+  PlayerHealthEmpty.src = "Assets/Health/healthbaremptyplayer.png";
+
+  var EnemyHealth = new Image();
+  EnemyHealth.src = "Assets/Health/healthbarenemy.png";
+
+  var EnemyHealthEmpty = new Image();
+  EnemyHealthEmpty.src = "Assets/Health/healthbaremptyenemy.png";
+
+  var BG = new Image();
+  BG.src = "Assets/stage.png";
+
+  BG.addEventListener("load",update);
+
+  function render() {
+
+    context.fillRect (0, 0, canvas.width, canvas.height);
+    //Clear the previous animation frame
+    context.clearRect(1, 1, canvas.width-2, canvas.height-2);
+    //drwas background
+    context.drawImage(BG, 0, 0, BG.width, BG.height, 0, 0, BG.width * scale, BG.height * scale);
+    //draws Enemy
+    context.drawImage(Enemy.drawImage, Enemy.currentAnim.xOffset, Enemy.currentAnim.yOffset, Enemy.W, Enemy.H, Enemy.X, Enemy.Y, Enemy.W*scale, Enemy.H*scale);
+    //draws Player
+    context.drawImage(Player.drawImage, Player.currentAnim.xOffset, Player.currentAnim.yOffset, Player.W, Player.H, Player.X, Player.Y, Player.W*scale, Player.H*scale);
+    //healthbar bg
+    context.drawImage(PlayerHealthEmpty,0,0,PlayerHealthEmpty.width,PlayerHealthEmpty.height,(canvas.width / 2) - PlayerHealthEmpty.width*scale - 47, 6, PlayerHealthEmpty.width * scale, PlayerHealthEmpty.height * scale);
+    context.drawImage(EnemyHealthEmpty,0,0,EnemyHealthEmpty.width,EnemyHealthEmpty.height,(canvas.width / 2) + EnemyHealthEmpty.width/scale, 6, EnemyHealthEmpty.width * scale, EnemyHealthEmpty.height * scale);
+    //healthbar
+    context.drawImage(PlayerHealth,0,0,PlayerHealth.width,PlayerHealth.height,(canvas.width / 2) - PlayerHealth.width* scale * Player.health/100 - 47 , 0, PlayerHealth.width * scale * Player.health/100, PlayerHealth.height * scale);
+    context.drawImage(EnemyHealth,0,0,EnemyHealth.width,EnemyHealth.height,(canvas.width / 2) + EnemyHealth.width/scale, 0, EnemyHealth.width * scale * Enemy.health/100, EnemyHealth.height * scale);
+    //drwas KO indicator
+    context.drawImage(KO,0,0,KO.width,KO.height,(canvas.width / 2) - KO.width - 15, 0, KO.width * scale, KO.height * scale);
+  }
+
+  function update(){
+    //checks if in main menu
+    if (inMenu) updateMenu();
+    else {
+      requestAnimationFrame(update,canvas);
+
+      Player.setAnimations();
+      Enemy.setAnimations();
+
+      if(Enemy.die.value){
+        Player.win.value = true;
+        if (Player.win.stop){
+          reloadOnClick = true;
+          overlayon("You win!");
+        }
+      }
+      else if (Player.die.value){
+        Enemy.win.value = true;
+        if (Enemy.win.stop){
+          reloadOnClick = true;
+          overlayon("You lose!")
+        }
+      }
+      else {
+
+        BodyHandler(Player);
+        BodyHandler(Enemy);
+
+        EnemyController();
+
+        //-----------------------move resetter------------------------//
+        //re-enable player jump, kick and punch
+        if(!Player.kick.value && kickKeyUp) Player.kick.completed = false;
+
+        if(!Player.punch.value && punchKeyUp) Player.punch.completed = false;
+
+        if(!Player.jump.value && jumpKeyUp) Player.jump.completed = false;
+
+        //re-enable enemy jump, kick and punch
+        if(!Enemy.kick.value) Enemy.kick.completed = false;
+
+        if(!Enemy.punch.value) Enemy.punch.completed = false;
+
+        if(!Enemy.jump.value) Enemy.jump.completed = false;
+
+
+        //Move the Player
+        Player.X += Player.VX;
+        Enemy.X += Enemy.VX;
+
+        //determines facing direction
+        if (Player.X < Enemy.X) {
+          Player.currentAnim.flip = false;
+          Enemy.currentAnim.flip = true;
+        }
+        else {
+          Player.currentAnim.flip = true;
+          Enemy.currentAnim.flip = false;
+        }
+      }
+
+      Player.currentAnim.updateAnimation();
+      Enemy.currentAnim.updateAnimation();
+
+      //Render the sprite object
+      render();
+    }
+  }
+
+  function instructions() {
+    overlayon("Punching deals 10 damage.</br>Kicking deals 15 damage.</br>Jumping at the right time makes you take no damage from enemy attacks.</br>Crouching makes you take 7 less damage.");
+  }
+
+  function controls() {
+    overlayon("W and D to move.</br> S to crouch. </br> Up arrow to punch. </br> Down arrow to kick. </br> Spacebar to jump or select.");
+  }
+
+  function credits() {
+    overlayon("Eric Balas</br>Ethan Butler</br>Marco Colonna</br>Jory Finewax");
+  }
+
+</script>

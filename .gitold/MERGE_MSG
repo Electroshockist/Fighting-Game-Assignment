@@ -1,0 +1,6 @@
+Revert "Added git lfs + video"
+
+This reverts commit 2d89f1370c0ffc435670cb990d8570342a0fc3fe.
+
+# Conflicts:
+#	.gitattributes

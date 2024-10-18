@@ -2,6 +2,8 @@
 This was an assignment made during our first year of college. Made using raw HTML, JS and CSS.
 
 Made By Eric, Ethan, Marco and Jory
+
+[Play it here](https://electroshockist.github.io/Fighting-Game-Assignment/index.html)
 ## Features
 - Basic collisions
 - Basic sprite sheet animation

@@ -1,9 +1,0 @@
-0000000000000000000000000000000000000000 8e1e883652e6dc2d5407d74fc12b3de6af83d385 Electroshockist <ericonfire2@yahoo.com> 1645714243 -0500	clone: from https://github.com/Electroshockist/Fighting-Game-Assignment.git
-8e1e883652e6dc2d5407d74fc12b3de6af83d385 2d89f1370c0ffc435670cb990d8570342a0fc3fe Electroshockist <ericonfire2@yahoo.com> 1645714274 -0500	commit: Added git lfs + video
-2d89f1370c0ffc435670cb990d8570342a0fc3fe 86e80a894e1a2c215421e5d8c0e81911cec8e28b Electroshockist <ericonfire2@yahoo.com> 1645717561 -0500	commit: Replaced video with gif
-86e80a894e1a2c215421e5d8c0e81911cec8e28b dedba57653df03bae80ce8be4676157a40545dee Electroshockist <ericonfire2@yahoo.com> 1645726823 -0500	pull --progress origin: Fast-forward
-dedba57653df03bae80ce8be4676157a40545dee 9ba268d57d245b14165da3537ca66ef31eb0b2bc Electroshockist <ericonfire2@yahoo.com> 1683935327 -0400	commit: Removed git lfs
-9ba268d57d245b14165da3537ca66ef31eb0b2bc 8e1e883652e6dc2d5407d74fc12b3de6af83d385 Electroshockist <ericonfire2@yahoo.com> 1683935654 -0400	reset: moving to 8e1e883652e6dc2d5407d74fc12b3de6af83d385
-8e1e883652e6dc2d5407d74fc12b3de6af83d385 9ba268d57d245b14165da3537ca66ef31eb0b2bc Electroshockist <ericonfire2@yahoo.com> 1683935950 -0400	pull origin master: Fast-forward
-9ba268d57d245b14165da3537ca66ef31eb0b2bc 9ba268d57d245b14165da3537ca66ef31eb0b2bc Electroshockist <ericonfire2@yahoo.com> 1683936038 -0400	rebase (start): checkout 2d89f1370c0ffc435670cb990d8570342a0fc3fe
-9ba268d57d245b14165da3537ca66ef31eb0b2bc 9ba268d57d245b14165da3537ca66ef31eb0b2bc Electroshockist <ericonfire2@yahoo.com> 1683936039 -0400	rebase (finish): returning to refs/heads/master
